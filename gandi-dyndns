@@ -12,6 +12,7 @@ def main():
     apikey = ''
     domain = ''
     record = ''
+    ttl = 10800
     rtypes = []
     quiet=False
 
@@ -22,6 +23,7 @@ def main():
     optp.add_option('-4', '--ipv4',   help='Enable IPv4', action='store_true')
     optp.add_option('-6', '--ipv6',   help='Enable IPv6', action='store_true')
     optp.add_option('-r', '--record', help='Specify record data')
+    optp.add_option('-t', '--ttl',    help='Time to live in seconds for the records', type='int', dest='ttl', default=ttl)
     optp.add_option('--extip4', help='Force external IPv4. This can be used to update a record with an IP different than the IP of the server/workstation from which the script is executed')
     optp.add_option('--extip6', help='Force external IPv6. This can be used to update a record with an IP different than the IP of the server/workstation from which the script is executed')
     optp.add_option('-q', '--quiet',    help='No output except to stderr on error', action='store_true')
@@ -35,6 +37,7 @@ def main():
     record = opts.record    
     extip4 = opts.extip4
     extip6 = opts.extip6
+    ttl = opts.ttl
     if opts.quiet: quiet=True
     
     if apikey == None or apikey == '':
@@ -143,9 +146,9 @@ def get_public_ipv6():
         return matches.group(1)
     return None
 
-def update_record(apikey, zone_id, zone_version, record, rtype, value):
+def update_record(apikey, zone_id, zone_version, record, rtype, value, ttl=10800):
     delete_record(apikey, zone_id, zone_version, record, rtype)
-    insert_record(apikey, zone_id, zone_version, record, rtype, value)    
+    insert_record(apikey, zone_id, zone_version, record, rtype, value, ttl=ttl)    
 
 def delete_record(apikey, zone_id, zone_version, record, rtype):
     recordListOptions = {"name": record,
@@ -153,9 +156,9 @@ def delete_record(apikey, zone_id, zone_version, record, rtype):
 
     records = api.domain.zone.record.delete(apikey, zone_id, zone_version, recordListOptions)
 
-def insert_record(apikey, zone_id, zone_version, record, rtype, value):
+def insert_record(apikey, zone_id, zone_version, record, rtype, value, ttl=10800):
     zoneRecord = {"name": record, 
-                  "ttl": 10800, 
+                  "ttl": ttl, 
                   "type": rtype, 
                   "value": value}
 
